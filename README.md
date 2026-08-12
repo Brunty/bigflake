@@ -14,7 +14,7 @@ or a support ticket. The rest is a [Snowflake](https://en.wikipedia.org/wiki/Sno
 flake, widened to 128 bits in the style of
 [bigflake](https://github.com/stevedomin/bigflake).
 
-## Install
+## 📦 Install
 
 ```sh
 go get github.com/brunty/bigflake
@@ -24,7 +24,7 @@ go get github.com/brunty/bigflake
 import "github.com/brunty/bigflake"
 ```
 
-## Layout
+## 🧱 Layout
 
 128 bits, most significant first, so ordering the numbers orders them by age:
 
@@ -43,7 +43,7 @@ That is 65,536 IDs per millisecond per worker — 65 million a second. When a
 millisecond's sequence is exhausted the generator waits for the clock rather
 than reusing a number.
 
-## Encoding
+## 🔤 Encoding
 
 IDs render as `prefix` + `_` + 22 characters of base62, over the alphabet
 `0-9A-Za-z`:
@@ -67,7 +67,7 @@ Small values are left-padded with `0` rather than printed short, so every body
 is exactly 22 characters. That uniformity is what makes the string comparison
 above valid.
 
-## Types
+## 🏷️ Types
 
 When every ID of a kind shares a prefix, bind it once. The prefix is validated
 up front, so minting cannot fail:
@@ -95,7 +95,7 @@ variables:
 var UserID = bigflake.MustNew().MustType("user")
 ```
 
-## Reading an ID
+## 🔍 Reading an ID
 
 ```go
 id, err := bigflake.Parse("user_0000B9JIhkWR2rgYhGjXBQ")
@@ -108,7 +108,7 @@ id.Sequence() // the per-millisecond sequence
 parts := id.Decompose() // Parts{Time, Worker, Sequence}
 ```
 
-## Numbers and bytes
+## 🔢 Numbers and bytes
 
 A 128-bit value does not fit any built-in Go integer, so there are two numeric
 forms:
@@ -127,7 +127,7 @@ id, err := bigflake.FromUint128("user", hi, lo)
 id, err := bigflake.FromBytes("user", b)
 ```
 
-## Storing IDs in a database
+## 🗄️ Storing IDs in a database
 
 128 bits no longer fits a `BIGINT`. In rough order of preference:
 
@@ -158,7 +158,7 @@ maximum a 32-character prefix allows is 55.
 `ID` implements `encoding.TextMarshaler` and `TextUnmarshaler`, so it encodes as
 a plain string in JSON.
 
-## Choosing a key type
+## 🔑 Choosing a key type
 
 ### Relational: prefer the bytes, especially in MySQL
 
@@ -204,7 +204,7 @@ The decision that does matter is how the store spreads keys:
   tablet. Salting or hash-prefixing the key spreads the load back out, and
   gives up the ordering to do it.
 
-## Workers
+## 👷 Workers
 
 By default the worker ID is the first non-loopback MAC address on the host, and
 48 random bits if there is none. In containers, MACs are often synthetic,
@@ -217,13 +217,13 @@ g, err := bigflake.New(bigflake.WithWorker(7))
 Any two generators that could run at the same instant need different worker IDs;
 that is the only rule uniqueness depends on.
 
-## Clocks
+## ⏱️ Clocks
 
 The generator never emits an ID with a timestamp below the last one it issued,
 so an NTP correction that steps the clock backwards costs some resolution but
 never repeats an ID.
 
-## Performance
+## ⚡ Performance
 
 On an M2 Pro (10 cores), `go test -bench . -benchmem -count=5`:
 
@@ -257,11 +257,11 @@ other, and distinct worker IDs are what keeps their output unique.
 Neither benchmark reaches the 65,536-per-millisecond ceiling, so neither
 measures the cost of waiting for the next millisecond.
 
-## Errors
+## ⚠️ Errors
 
 Errors wrap `bigflake.ErrInvalidPrefix` or `bigflake.ErrInvalidID`, so test them
 with `errors.Is`. A prefix is 1–32 lower-case letters and digits.
 
-## Licence
+## 📄 Licence
 
 [MIT](LICENSE) © Matt Brunt
