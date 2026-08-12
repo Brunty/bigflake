@@ -145,6 +145,7 @@ Size the column for the longest ID you will store: the body is always 22
 characters, plus the underscore, plus the prefix, so `user_…` is 27 and the
 maximum a 32-character prefix allows is 55.
 
+> [!CAUTION]
 > **If you store the string, the collation must be case-sensitive.** base62
 > uses `a` and `A` as different digits, so under a case-insensitive collation —
 > including `utf8mb4_0900_ai_ci`, the MySQL 8.0 default — two distinct IDs can
