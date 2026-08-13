@@ -39,7 +39,7 @@ so there is no epoch to configure and no 2089 wraparound like the original
 64-bit design. A 48-bit worker is exactly the width of a MAC address, so two
 machines get distinct IDs without anyone handing out node numbers.
 
-That is 65,536 IDs per millisecond per worker — 65 million a second. When a
+That is 65,536 IDs per millisecond per worker - 65 million a second. When a
 millisecond's sequence is exhausted the generator waits for the clock rather
 than reusing a number.
 
@@ -60,7 +60,7 @@ IDs render as `prefix` + `_` + 22 characters of base62, over the alphabet
 That last point has consequences worth being blunt about: these IDs cannot
 survive anything that folds case. Do not put them in a case-insensitive database
 column (see below), and do not expect a mistyped `l` for `I` to be forgiven.
-`Parse` is strict in both halves — the prefix must be lower case, and the body
+`Parse` is strict in both halves - the prefix must be lower case, and the body
 must match exactly.
 
 Small values are left-padded with `0` rather than printed short, so every body
@@ -100,8 +100,8 @@ var UserID = bigflake.MustNew().MustType("user")
 ```go
 id, err := bigflake.Parse("user_0000B9JIhkWR2rgYhGjXBQ")
 
-id.Prefix()   // "user" — the type
-id.Time()     // time.Time — when the ID was created (UTC)
+id.Prefix()   // "user" - the type
+id.Time()     // time.Time - when the ID was created (UTC)
 id.Worker()   // the worker that minted it
 id.Sequence() // the per-millisecond sequence
 
@@ -114,7 +114,7 @@ A 128-bit value does not fit any built-in Go integer, so there are two numeric
 forms:
 
 ```go
-hi, lo := id.Uint128() // two uint64 words — no allocation
+hi, lo := id.Uint128() // two uint64 words - no allocation
 n := id.Int()          // *big.Int, for arithmetic or a decimal rendering
 
 b := id.Bytes()        // 16 big-endian bytes
@@ -137,7 +137,7 @@ id, err := bigflake.FromBytes("user", b)
 | Two `BIGINT` columns           | `id.Uint128()`      | `users.FromUint128(hi, lo)`|
 | `VARCHAR(55)`                  | `id.String()`       | `bigflake.Parse(s)`         |
 
-The prefix belongs to the table, not the row — store the 16 bytes and let the
+The prefix belongs to the table, not the row - store the 16 bytes and let the
 `Type` re-attach the prefix on read. Storing the string is the most readable
 option and sorts correctly, at the cost of roughly double the space.
 
@@ -147,8 +147,8 @@ maximum a 32-character prefix allows is 55.
 
 > [!CAUTION]
 > **If you store the string, the collation must be case-sensitive.** base62
-> uses `a` and `A` as different digits, so under a case-insensitive collation —
-> including `utf8mb4_0900_ai_ci`, the MySQL 8.0 default — two distinct IDs can
+> uses `a` and `A` as different digits, so under a case-insensitive collation -
+> including `utf8mb4_0900_ai_ci`, the MySQL 8.0 default - two distinct IDs can
 > compare as equal. That means spurious duplicate-key errors on a unique index,
 > and lookups that match the wrong row. Use a binary or `_bin` collation
 > (`ascii_bin` is the right fit: the content is ASCII, and the comparison is a
@@ -162,7 +162,7 @@ a plain string in JSON.
 
 ### Relational: prefer the bytes, especially in MySQL
 
-In InnoDB a secondary index does not store a row pointer — it stores the whole
+In InnoDB a secondary index does not store a row pointer - it stores the whole
 primary key. A 28-byte string key instead of a 16-byte binary one therefore
 costs the extra bytes again in *every* secondary index on the table, so four
 secondary indexes pay the difference five times. Wider keys also fit fewer per
@@ -173,9 +173,9 @@ Two more MySQL traps if you do store the string:
 
 - Declare the column `ascii`, not `utf8mb4`. The content is ASCII either way,
   but `utf8mb4` makes MySQL budget 4 bytes per character wherever it needs a
-  fixed upper bound — sort buffers, temp tables, index key limits.
+  fixed upper bound - sort buffers, temp tables, index key limits.
 - Use a case-sensitive collation. This is a correctness requirement, not a
-  performance preference — see the warning above.
+  performance preference - see the warning above.
 
 Postgres is less sensitive: its indexes reference heap tuples rather than
 repeating the primary key, so a text key costs less there than in MySQL. `uuid`
@@ -191,7 +191,7 @@ these over UUIDv4, and it survives whichever column type you pick.
 Most document, key-value and column stores have no clustered-index penalty, so
 the string form costs little: keys in a key-value store are byte strings
 already, and DynamoDB counts binary attributes base64-encoded, which makes 16
-bytes 24 characters against this encoding's 27 — a saving of three characters.
+bytes 24 characters against this encoding's 27 - a saving of three characters.
 Rarely worth the lost readability.
 
 The decision that does matter is how the store spreads keys:
@@ -245,7 +245,7 @@ more characters to carry the same 128 bits. Density won that trade.
 
 `Generate` is one goroutine, so its lock is uncontended: ~22M IDs/sec.
 `GenerateParallel` shares one generator across all 10 cores, and the lock then
-dominates — about 6.6M IDs/sec in total, *below* the single-goroutine figure.
+dominates - about 6.6M IDs/sec in total, *below* the single-goroutine figure.
 Minting IDs is short enough that the goroutines spend their time queueing for
 the lock rather than working.
 
